@@ -69,37 +69,37 @@ Browse Products → Add to Cart → Checkout → Payment → Order Creation → 
 
 ### Prerequisites
 - Ruby (>= 3.0)
-- Rails (>= 7.0)
-- PostgreSQL (hoặc MySQL, tùy cấu hình database)
+- Rails (>= 8.0)
+- PostgreSQL (or MySQL, based on database configuration)
 - Node.js & Yarn (cho asset pipeline nếu dùng)
 
-### Cài đặt & Khởi động dự án
+### Setup & Run Project
 ```bash
 # Clone repository
 git clone <repo-url>
 cd E_Commerce_BackEnd
 
-# Cài đặt gem
+# Gem install
 bundle install
 
-# Cài đặt JavaScript packages (nếu có)
+# Javasript package install (optional)
 yarn install # hoặc npm install
 
-# Tạo database & migrate
+# Create database & migrate
 rails db:create db:migrate db:seed
 
-# Chạy server
+# Run server
 rails server
 ```
 
-### Các lệnh hữu ích
-- Chạy test: `rails test`
+### Commands
+- Run test: `rails test`
 - Rubocop: `bundle exec rubocop`
 - Brakeman: `bundle exec brakeman`
 
-### Đường dẫn truy cập
-- Trang chủ: http://localhost:3000
-- API docs: (nếu có, bổ sung đường dẫn)
+### Link
+- Homepage: http://localhost:3000
+- API docs: ()
 
 ---
 
