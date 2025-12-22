@@ -1,6 +1,6 @@
 # Order Lifecycle
 
-![Order Lifecycle](../../images/order_lifecycle.png)
+![Order Lifecycle](../images/order_lifecycle.png)
 
 ## 🎯 Objective
 - Avoid half-completed orders

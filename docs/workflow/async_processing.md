@@ -1,6 +1,6 @@
 # Sync vs Async Processing (RabbitMQ)
 
-![Sync vs Async Flow](../../images/sync_async_flow.png)
+![Sync vs Async Flow](../images/sync_async_flow.png)
 
 ## 🎯 Objective
 - Reduce API response time
