@@ -35,7 +35,7 @@ The system is API-first, scalable, and designed to support both web and mobile c
 - 👉 [API Documentation](../docs/backend/api/README.md)
 - 👉 [Backend Architecture](../docs/architecture/backend_architecture.md)
 - 👉 [Order & Payment Workflow](../docs/workflow/order_flow.md)
-- 👉 [Security & Authentication](../docs/backend/security.md)
+<!-- - 👉 [Security & Authentication](../docs/backend/security.md) -->
 
 ### 🎨 Frontend Documentation
 - 👉 [Frontend Architecture](../docs/architecture/frontend_architecture.md)
@@ -83,7 +83,7 @@ Security scan: bundle exec brakeman
 
 MIT
 
----
+------
 
 👉 Continue with:
 - [Documentation Index](./README.md)
