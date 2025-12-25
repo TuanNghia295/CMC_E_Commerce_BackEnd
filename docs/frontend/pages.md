@@ -4,7 +4,7 @@
 
 ![User Flow Diagram](../images/user_flow.png)
 
-### 🎯 Objective
+### 🎯 Objectives
 - Describe user behavior from entering the website to completing a purchase
 - Clearly distinguish **Guest** vs **Authenticated User**
 - Serve as the foundation for:
