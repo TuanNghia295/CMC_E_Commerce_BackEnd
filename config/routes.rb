@@ -11,4 +11,7 @@ Rails.application.routes.draw do
 
   # Defines the root path route ("/")
   # root "posts#index"
+  # auth: Chỉ định AuthController (file app/controllers/auth_controller.rb
+  # login: Chỉ định hàm def login bên trong controller đó sẽ là nơi tiếp nhận dữ liệu.
+  post "/auth/login", to: "auth#login"
 end
