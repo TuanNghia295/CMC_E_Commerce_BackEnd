@@ -10,9 +10,124 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_26_073013) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_26_101323) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "cart_items", force: :cascade do |t|
+    t.bigint "cart_id", null: false
+    t.datetime "created_at", null: false
+    t.bigint "product_variant_id", null: false
+    t.integer "quantity"
+    t.datetime "updated_at", null: false
+    t.index ["cart_id"], name: "index_cart_items_on_cart_id"
+    t.index ["product_variant_id"], name: "index_cart_items_on_product_variant_id"
+  end
+
+  create_table "carts", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "status"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id"], name: "index_carts_on_user_id"
+  end
+
+  create_table "categories", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "name"
+    t.bigint "parent_id"
+    t.string "status"
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "inventories", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "product_variant_id", null: false
+    t.integer "quantity"
+    t.datetime "updated_at", null: false
+    t.index ["product_variant_id"], name: "index_inventories_on_product_variant_id"
+  end
+
+  create_table "order_events", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "event_type"
+    t.bigint "order_id", null: false
+    t.jsonb "payload"
+    t.datetime "updated_at", null: false
+    t.index ["order_id"], name: "index_order_events_on_order_id"
+  end
+
+  create_table "order_items", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "order_id", null: false
+    t.decimal "price"
+    t.bigint "product_variant_id", null: false
+    t.integer "quantity"
+    t.datetime "updated_at", null: false
+    t.index ["order_id"], name: "index_order_items_on_order_id"
+    t.index ["product_variant_id"], name: "index_order_items_on_product_variant_id"
+  end
+
+  create_table "orders", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "shipping_address"
+    t.string "status"
+    t.decimal "total_amount"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id"], name: "index_orders_on_user_id"
+  end
+
+  create_table "payments", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "order_id", null: false
+    t.string "payment_method"
+    t.string "status"
+    t.string "transaction_id"
+    t.datetime "updated_at", null: false
+    t.index ["order_id"], name: "index_payments_on_order_id"
+  end
+
+  create_table "product_variants", force: :cascade do |t|
+    t.string "color"
+    t.datetime "created_at", null: false
+    t.bigint "product_id", null: false
+    t.string "size"
+    t.string "sku"
+    t.datetime "updated_at", null: false
+    t.index ["product_id"], name: "index_product_variants_on_product_id"
+  end
+
+  create_table "products", force: :cascade do |t|
+    t.bigint "category_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "deleted_at"
+    t.text "description"
+    t.string "name"
+    t.decimal "price"
+    t.string "status"
+    t.datetime "updated_at", null: false
+    t.index ["category_id"], name: "index_products_on_category_id"
+  end
+
+  create_table "refersh_tokens", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "expires_at", precision: nil
+    t.datetime "revoked_at", precision: nil
+    t.string "token"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id"], name: "index_refersh_tokens_on_user_id"
+  end
+
+  create_table "shipments", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "order_id", null: false
+    t.string "status"
+    t.string "tracking_number"
+    t.datetime "updated_at", null: false
+    t.index ["order_id"], name: "index_shipments_on_order_id"
+  end
 
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
@@ -24,4 +139,18 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_26_073013) do
     t.string "role"
     t.datetime "updated_at", null: false
   end
+
+  add_foreign_key "cart_items", "carts"
+  add_foreign_key "cart_items", "product_variants"
+  add_foreign_key "carts", "users"
+  add_foreign_key "inventories", "product_variants"
+  add_foreign_key "order_events", "orders"
+  add_foreign_key "order_items", "orders"
+  add_foreign_key "order_items", "product_variants"
+  add_foreign_key "orders", "users"
+  add_foreign_key "payments", "orders"
+  add_foreign_key "product_variants", "products"
+  add_foreign_key "products", "categories"
+  add_foreign_key "refersh_tokens", "users"
+  add_foreign_key "shipments", "orders"
 end
