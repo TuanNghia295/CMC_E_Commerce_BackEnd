@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_26_101323) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_29_063954) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -110,14 +110,14 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_26_101323) do
     t.index ["category_id"], name: "index_products_on_category_id"
   end
 
-  create_table "refersh_tokens", force: :cascade do |t|
+  create_table "refresh_tokens", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "expires_at", precision: nil
     t.datetime "revoked_at", precision: nil
     t.string "token"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
-    t.index ["user_id"], name: "index_refersh_tokens_on_user_id"
+    t.index ["user_id"], name: "index_refresh_tokens_on_user_id"
   end
 
   create_table "shipments", force: :cascade do |t|
@@ -151,6 +151,6 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_26_101323) do
   add_foreign_key "payments", "orders"
   add_foreign_key "product_variants", "products"
   add_foreign_key "products", "categories"
-  add_foreign_key "refersh_tokens", "users"
+  add_foreign_key "refresh_tokens", "users"
   add_foreign_key "shipments", "orders"
 end

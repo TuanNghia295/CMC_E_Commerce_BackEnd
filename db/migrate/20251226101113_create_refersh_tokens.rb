@@ -1,6 +1,6 @@
 class CreateRefershTokens < ActiveRecord::Migration[8.1]
   def change
-    create_table :refersh_tokens do |t|
+    create_table :refresh_tokens do |t|
       t.string :token
       t.timestamp :expires_at
       t.timestamp :revoked_at

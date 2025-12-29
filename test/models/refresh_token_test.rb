@@ -1,6 +1,6 @@
 require "test_helper"
 
-class RefershTokenTest < ActiveSupport::TestCase
+class RefreshTokenTest < ActiveSupport::TestCase
   # test "the truth" do
   #   assert true
   # end
