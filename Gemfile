@@ -30,6 +30,7 @@ end
 group :test do
   gem "capybara"
   gem "selenium-webdriver"
+   gem "rspec-rails"
 end
 
 gem "bcrypt", "~> 3.1"
