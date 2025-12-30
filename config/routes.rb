@@ -1,11 +1,11 @@
+# config/routes.rb
 Rails.application.routes.draw do
-  get "up" => "rails/health#show", as: :rails_health_check
-
-  # auth: Chỉ định AuthController (file app/controllers/auth_controller.rb
-  # login: Chỉ định hàm def login bên trong controller đó sẽ là nơi tiếp nhận dữ liệu.
-  post "/auth/register", to: "auth#register"
-  post "/auth/login", to: "auth#login"
-
-  post "/token/refresh", to: "tokens#refresh"
-  post "/token/logout", to: "tokens#logout"
+  namespace :api do
+    namespace :v1 do
+      post "auth/login", to: "auth#login"
+      post "auth/register", to: "auth#register"
+      post "auth/logout", to: "auth#logout"
+      post "auth/refresh", to: "tokens#refresh"
+  end
+end
 end

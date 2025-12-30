@@ -4,9 +4,9 @@ class ApplicationController < ActionController::API
 
   # Changes to the importmap will invalidate the etag for HTML responses
   # stale_when_importmap_changes
+  include ActionController::Cookies
 
   before_action :authenticate_request
-
   attr_reader :current_user
 
   private
