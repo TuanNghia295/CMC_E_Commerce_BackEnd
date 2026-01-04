@@ -4,6 +4,7 @@ class Api::V1::TokensController < ApplicationController
   def refresh
     #  get token from cookies
     token_str = cookies.signed[:refresh_token]
+    p "TOKEN #{token_str}"
     if token_str.blank?
       render_unauthorized and return
     end

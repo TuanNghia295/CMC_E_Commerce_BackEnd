@@ -36,7 +36,6 @@ class Api::V1::AuthController < ApplicationController
         expires_at: 30.days.from_now
       )
 
-
       set_refresh_token_cookie(refreshToken.token)
 
       render json: {
@@ -49,15 +48,13 @@ class Api::V1::AuthController < ApplicationController
   end
 
   def logout
-    # Lấy refresh token từ cookies (ưu tiên signed, fallback encrypted)
-    token_str = cookies.signed[:refresh_token] || cookies.encrypted[:refresh_token]
+    # Chỉ lấy refresh token từ cookies.signed (giải mã), không nhận từ header/body
+    token_str = cookies.signed[:refresh_token]
     token = nil
 
-    if @current_user
-      # Nếu có access token hợp lệ, tìm refresh token theo user
-      token = @current_user.refresh_tokens.find_by(token: token_str)
-    else
-      # Nếu access token hết hạn, tìm refresh token trong DB
+    Rails.logger.info "[LOGOUT] Refresh token (from cookie): #{token_str}"
+
+    if token_str.present?
       token = RefreshToken.find_by(token: token_str)
     end
 
