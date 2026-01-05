@@ -35,4 +35,4 @@ end
 
 gem "bcrypt", "~> 3.1"
 gem "jwt"
-gem 'rack-cors'
+gem "rack-cors"
