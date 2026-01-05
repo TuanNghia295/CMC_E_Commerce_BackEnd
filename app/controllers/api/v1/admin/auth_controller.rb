@@ -19,16 +19,30 @@ class Api::V1::Admin::AuthController < ApplicationController
     end
   end
 
-  def logout
+
+
+   def logout
+    cookie_options = {
+      path: "/",
+      secure: Rails.env.production?
+    }
+
     token_str = cookies.signed[:admin_refresh_token]
-    token = RefreshToken.find_by(token: token_str)
-    if token
-      token.update!(revoked_at: Time.current)
-      cookies.delete(:admin_refresh_token, path: "/api/v1/admin/auth", secure: Rails.env.production?)
-      render json: { message: "Logged out successfully" }
+
+    Rails.logger.info "[LOGOUT] Attempting logout for token: #{token_str.inspect}"
+
+    cookies.delete(:admin_refresh_token, cookie_options)
+
+    if token_str.present?
+      token = RefreshToken.find_by(token: token_str)
+      if token
+        token.update!(revoked_at: Time.current)
+        render json: { message: "Logged out successfully" }
+      else
+        render json: { error: "Token valid in cookie but not found in DB" }, status: :not_found
+      end
     else
-      cookies.delete(:admin_refresh_token, path: "/api/v1/admin/auth", secure: Rails.env.production?)
-      render json: { error: "Token not found" }, status: :not_found
+      render json: { error: "No refresh token found in request" }, status: :unauthorized
     end
   end
 
@@ -39,8 +53,8 @@ class Api::V1::Admin::AuthController < ApplicationController
       value: token,
       httponly: true,
       expires: 30.days.from_now,
-      path: "/api/v1/admin/auth",
-      same_site: :none,
+      path: "/", # let all API can use refresh token
+      same_site: Rails.env.production? ? :none : :lax,
       secure: Rails.env.production?
     }
   end
