@@ -23,7 +23,7 @@ class Api::V1::AuthController < ApplicationController
         user: user_response(user)
       }
     else
-      render json: { error: "Invalid email or password" }, status: :unauthorized
+      render json: { message: "Invalid email or password" }, status: :unauthorized
     end
   end
 
