@@ -9,25 +9,52 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: ruby/setup-ruby@v1
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.3"
           bundler-cache: true
+
       - name: Run RuboCop
         run: bundle exec rubocop
 
   test:
     needs: lint
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: e_commerce_back_end_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
-      - uses: actions/checkout@v3
-      - uses: ruby/setup-ruby@v1
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.3"
           bundler-cache: true
+
       - name: Run RSpec
-        run: bundle exec rspec
+        env:
+          RAILS_ENV: test
+        run: |
+          bundle exec rails db:prepare
+          bundle exec rspec
 
   deploy:
     needs: test
@@ -54,10 +81,9 @@ jobs:
             git fetch --all
             git reset --hard origin/main
 
-            # 3. Build lại Image và khởi động lại container
-            # Lưu ý: Docker Compose sẽ tự dùng các biến trong file .env trên EC2 của bạn
+            # 3. Build lại Docker image và khởi động container
             docker-compose build
             docker-compose up -d
 
-            # 4. Dọn dẹp các Image thừa để tránh đầy ổ cứng EC2
+            # 4. Dọn dẹp các image thừa để tránh đầy ổ cứng EC2
             docker system prune -f
