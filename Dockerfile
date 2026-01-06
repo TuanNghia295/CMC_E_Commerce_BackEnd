@@ -1,20 +1,30 @@
 FROM ruby:3.3.5
 
+ENV RAILS_ENV=production \
+    BUNDLE_WITHOUT="development test" \
+    BUNDLE_DEPLOYMENT=true
+
 WORKDIR /app
 
+# System deps
 RUN apt-get update -qq && apt-get install -y \
   nodejs \
-  postgresql-client
+  npm \
+  postgresql-client \
+  && npm install -g yarn \
+  && rm -rf /var/lib/apt/lists/*
 
+# Gems
 COPY Gemfile Gemfile.lock ./
 RUN bundle install
 
+# App
 COPY . .
 
-ENV RAILS_ENV=production
-
+# Precompile assets
 RUN bundle exec rails assets:precompile
 
 EXPOSE 3000
 
-CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0"]
+# Puma là chuẩn production
+CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]
