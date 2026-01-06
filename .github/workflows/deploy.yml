@@ -52,6 +52,7 @@ jobs:
       - name: Run RSpec
         env:
           RAILS_ENV: test
+          DATABASE_URL: postgres://postgres:password@localhost:5432/e_commerce_back_end_test
         run: |
           bundle exec rails db:prepare
           bundle exec rspec
