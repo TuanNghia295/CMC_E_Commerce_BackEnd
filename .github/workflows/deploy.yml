@@ -1,52 +1,63 @@
 name: CI/CD Rails to EC2
 
 on:
-    push:
-        branches:
-            - main
+  push:
+    branches:
+      - main
 
 jobs:
-    build-and-deploy:
-        runs-on: ubuntu-latest
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+      - name: Run RuboCop
+        run: bundle exec rubocop
 
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v3
+  test:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+      - name: Run RSpec
+        run: bundle exec rspec
 
-            - name: Set up Ruby
-              uses: ruby/setup-ruby@v1
-              with:
-                  ruby-version: 3.2
-                  bundler-cache: true
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-            - name: Install dependencies
-              run: |
-                  gem install rubocop
-                  bundle install --jobs 4 --retry 3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-            - name: Run RuboCop
-              run: bundle exec rubocop
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            # 1. Chuyển vào thư mục dự án
+            cd /home/ubuntu/E_COMMERCE_BACKEND || exit
 
-            - name: Run RSpec
-              run: bundle exec rspec
+            # 2. Cập nhật code mới nhất
+            git fetch --all
+            git reset --hard origin/main
 
-            - name: Set up Docker
-              uses: docker/setup-buildx-action@v3
+            # 3. Build lại Image và khởi động lại container
+            # Lưu ý: Docker Compose sẽ tự dùng các biến trong file .env trên EC2 của bạn
+            docker-compose build
+            docker-compose up -d
 
-            - name: Build Docker image
-              run: docker-compose -f docker-compose.yml build
-
-            - name: Deploy to EC2
-              uses: appleboy/ssh-action@v0.1.6
-              with:
-                  host: ${{ secrets.EC2_HOST }}
-                  username: ${{ secrets.EC2_USER }}
-                  key: ${{ secrets.EC2_SSH_KEY }}
-                  port: 22
-                  script: |
-                      cd /home/ubuntu/E_COMMERCE_BACKEND
-                      git fetch --all
-                      git reset --hard origin/main
-                      docker-compose -f docker-compose.yml build
-                      docker-compose -f docker-compose.yml up -d
-                      docker system prune -f
+            # 4. Dọn dẹp các Image thừa để tránh đầy ổ cứng EC2
+            docker system prune -f
