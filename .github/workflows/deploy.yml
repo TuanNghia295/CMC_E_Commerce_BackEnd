@@ -100,9 +100,11 @@ jobs:
 
             cd /home/ubuntu/E_COMMERCE_BACKEND || exit 1
 
-            echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login \
+              -u "${{ secrets.DOCKERHUB_USERNAME }}" \
+              --password-stdin
 
-            docker pull $DOCKERHUB_USERNAME/e_commerce_backend:latest
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/e_commerce_backend:latest
 
             if command -v docker compose >/dev/null 2>&1; then
               docker compose down || true
