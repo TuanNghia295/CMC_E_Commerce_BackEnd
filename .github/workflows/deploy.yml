@@ -91,18 +91,19 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script_stop: true
+
+          # 👇 inject secrets đúng cách
+          envs: DOCKERHUB_USERNAME,DOCKERHUB_TOKEN
+
           script: |
             set -e
 
             cd /home/ubuntu/E_COMMERCE_BACKEND || exit 1
 
-            # Login Docker Hub trên EC2 bằng secrets
-            echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+            echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
 
-            # Kéo image mới nhất
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/e_commerce_backend:latest
+            docker pull $DOCKERHUB_USERNAME/e_commerce_backend:latest
 
-            # Dùng docker compose v2 nếu có, fallback v1
             if command -v docker compose >/dev/null 2>&1; then
               docker compose down || true
               docker compose up -d
@@ -111,5 +112,4 @@ jobs:
               docker-compose up -d
             fi
 
-            # Dọn image không dùng
             docker image prune -f
