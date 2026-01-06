@@ -9,11 +9,9 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
+      - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.3"
           bundler-cache: true
@@ -24,6 +22,7 @@ jobs:
   test:
     needs: lint
     runs-on: ubuntu-latest
+
     services:
       postgres:
         image: postgres:15
@@ -40,11 +39,9 @@ jobs:
           --health-retries 5
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
+      - uses: ruby/setup-ruby@v1
         with:
           ruby-version: "3.3"
           bundler-cache: true
@@ -57,16 +54,36 @@ jobs:
           bundle exec rails db:prepare
           bundle exec rspec
 
-  deploy:
+  build:
     needs: test
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Login Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Build & Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/e_commerce_backend:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/e_commerce_backend:${{ github.sha }}
+
+  # =========================
+  # 4. DEPLOY (PULL + RUN)
+  # =========================
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
       - name: Deploy to EC2 via SSH
         uses: appleboy/ssh-action@v0.1.6
         with:
@@ -75,16 +92,11 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
-            # 1. Chuyển vào thư mục dự án
-            cd /home/ubuntu/E_COMMERCE_BACKEND || exit
+            cd /home/ubuntu/E_COMMERCE_BACKEND || exit 1
 
-            # 2. Cập nhật code mới nhất
-            git fetch --all
-            git reset --hard origin/main
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/e_commerce_backend:latest
 
-            # 3. Build lại Docker image và khởi động container
-            docker-compose build
+            docker-compose down
             docker-compose up -d
 
-            # 4. Dọn dẹp các image thừa để tránh đầy ổ cứng EC2
-            docker system prune -f
+            docker image prune -f
