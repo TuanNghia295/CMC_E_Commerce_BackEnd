@@ -75,6 +75,8 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/e_commerce_backend:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/e_commerce_backend:${{ github.sha }}
+          build-args: |
+            SECRET_KEY_BASE=${{ secrets.SECRET_KEY_BASE }}
 
   # =========================
   # 4. DEPLOY (PULL + RUN)

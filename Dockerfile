@@ -21,6 +21,9 @@ RUN bundle install
 # App
 COPY . .
 
+ARG SECRET_KEY_BASE
+ENV SECRET_KEY_BASE=$SECRET_KEY_BASE
+
 # Precompile assets
 RUN bundle exec rails assets:precompile
 
