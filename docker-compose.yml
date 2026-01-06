@@ -10,15 +10,13 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - db_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  web:
+  api:
     image: tuannghia2905/e_commerce_backend:latest
     restart: always
     env_file:
@@ -28,11 +26,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: >
-      sh -c "
-      bundle exec rails db:migrate &&
-      bundle exec puma -C config/puma.rb
-      "
+    command: bundle exec puma -C config/puma.rb
 
 volumes:
   db_data:
