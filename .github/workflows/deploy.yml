@@ -78,9 +78,6 @@ jobs:
           build-args: |
             SECRET_KEY_BASE=${{ secrets.SECRET_KEY_BASE }}
 
-  # =========================
-  # 4. DEPLOY (PULL + RUN)
-  # =========================
   deploy:
     needs: build
     runs-on: ubuntu-latest
@@ -93,12 +90,26 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
+          script_stop: true
           script: |
+            set -e
+
             cd /home/ubuntu/E_COMMERCE_BACKEND || exit 1
 
+            # Login Docker Hub trên EC2 bằng secrets
+            echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+            # Kéo image mới nhất
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/e_commerce_backend:latest
 
-            docker-compose down
-            docker-compose up -d
+            # Dùng docker compose v2 nếu có, fallback v1
+            if command -v docker compose >/dev/null 2>&1; then
+              docker compose down || true
+              docker compose up -d
+            else
+              docker-compose down || true
+              docker-compose up -d
+            fi
 
+            # Dọn image không dùng
             docker image prune -f
