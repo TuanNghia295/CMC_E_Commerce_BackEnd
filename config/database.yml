@@ -107,3 +107,12 @@ production:
     <<: *primary_production
     database: e_commerce_back_end_production_cable
     migrations_paths: db/cable_migrate
+
+
+  staging:
+  <<: *default
+  database: <%= ENV.fetch("POSTGRES_DB") %>
+  username: <%= ENV.fetch("POSTGRES_USER") %>
+  password: <%= ENV.fetch("POSTGRES_PASSWORD") %>
+  host: <%= ENV.fetch("POSTGRES_HOST", "db") %>
+  port: <%= ENV.fetch("POSTGRES_PORT", 5432) %>
