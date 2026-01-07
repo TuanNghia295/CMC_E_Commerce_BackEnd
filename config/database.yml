@@ -111,8 +111,8 @@ production:
 
   staging:
   <<: *default
-  database: <%= ENV.fetch("POSTGRES_DB") %>
-  username: <%= ENV.fetch("POSTGRES_USER") %>
-  password: <%= ENV.fetch("POSTGRES_PASSWORD") %>
-  host: <%= ENV.fetch("POSTGRES_HOST", "db") %>
-  port: <%= ENV.fetch("POSTGRES_PORT", 5432) %>
+  database: e_commerce_back_end_test
+  username: ntnghia13
+  password: Panda2905@
+  host: db
+  
