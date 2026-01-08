@@ -1,25 +1,22 @@
 class Api::V1::AuthController < ApplicationController
-  skip_before_action :authenticate_request, only: [ :register, :login ]
+  skip_before_action :authenticate_request, only: [ :register, :login, :refresh ]
 
+  # POST /api/v1/auth/login
   def login
     user = User.find_by(email: params[:email])
 
     if user&.authenticate(params[:password])
-      access_token = JwtService.encode({
-        user_id: user.id
-      })
+      access_token = JwtService.encode({ user_id: user.id })
 
-      # create new refresh token everytime user login
-      refresh_token_record = user.refresh_tokens.create!(
+      # check if user already has a valid refresh token
+      refresh_token_record = user.refresh_tokens.active.first_or_create!(
         token: SecureRandom.hex(32),
         expires_at: 30.days.from_now
       )
 
-      # save the rf token to cookie
-      set_refresh_token_cookie(refresh_token_record.token)
-
       render json: {
         access_token: access_token,
+        refresh_token: refresh_token_record.token,
         user: user_response(user)
       }
     else
@@ -27,19 +24,20 @@ class Api::V1::AuthController < ApplicationController
     end
   end
 
+  # POST /api/v1/auth/register
   def register
     user = User.new(register_params)
     if user.save
-      accessToken = JwtService.encode({ user_id: user.id })
-      refreshToken = user.refresh_tokens.create!(
+      access_token = JwtService.encode({ user_id: user.id })
+
+      refresh_token = user.refresh_tokens.create!(
         token: SecureRandom.hex(32),
         expires_at: 30.days.from_now
       )
 
-      set_refresh_token_cookie(refreshToken.token)
-
       render json: {
-        access_token: accessToken,
+        access_token: access_token,
+        refresh_token: refresh_token.token,
         user: user_response(user)
       }
     else
@@ -47,46 +45,43 @@ class Api::V1::AuthController < ApplicationController
     end
   end
 
+  # POST /api/v1/auth/refresh
+  def refresh
+    token_str = params[:refresh_token]
+
+    if token_str.blank?
+      return render json: { error: "No refresh token provided" }, status: :unauthorized
+    end
+
+    refresh_token = RefreshToken.active.find_by(token: token_str)
+
+    if refresh_token.nil?
+      return render json: { error: "Invalid or expired refresh token" }, status: :unauthorized
+    end
+
+    user = refresh_token.user
+    access_token = JwtService.encode({ user_id: user.id })
+
+    render json: { access_token: access_token }
+  end
+
+  # POST /api/v1/auth/logout
   def logout
-    cookie_options = {
-      path: "/",
-      secure: Rails.env.production?
-    }
-
-    token_str = cookies.signed[:refresh_token]
-
-    Rails.logger.info "[LOGOUT] Attempting logout for token: #{token_str.inspect}"
-
-    cookies.delete(:refresh_token, cookie_options)
+    token_str = params[:refresh_token]
 
     if token_str.present?
       token = RefreshToken.find_by(token: token_str)
-      if token
-        token.update!(revoked_at: Time.current)
-        render json: { message: "Logged out successfully" }
-      else
-        render json: { error: "Token valid in cookie but not found in DB" }, status: :not_found
-      end
-    else
-      render json: { error: "No refresh token found in request" }, status: :unauthorized
+      token&.update!(revoked_at: Time.current)
     end
+
+    render json: { message: "Logged out successfully" }
   end
 
   private
-  def set_refresh_token_cookie(token)
-    cookies.signed[:refresh_token] = {
-      value: token,
-      httponly: true,
-      expires: 30.days.from_now,
-      path: "/", # let all API can use refresh token
-      same_site: Rails.env.production? ? :none : :lax,
-      secure: Rails.env.production?
-    }
-  end
 
-
+  # Form-data params
   def register_params
-    params.permit(:email, :password, :password_confirmation, :full_name,)
+    params.permit(:email, :password, :password_confirmation, :full_name)
   end
 
   def user_response(user)

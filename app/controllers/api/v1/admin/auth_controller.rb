@@ -1,17 +1,22 @@
 class Api::V1::Admin::AuthController < ApplicationController
-  skip_before_action :authenticate_request, only: [ :login ]
+  skip_before_action :authenticate_request, only: [ :login, :refresh ]
 
+  # POST /api/v1/admin/auth/login
   def login
     user = User.find_by(email: params[:email])
+
     if user&.authenticate(params[:password]) && user.role == "admin"
       access_token = JwtService.encode({ user_id: user.id, role: user.role })
-      refresh_token_record = user.refresh_tokens.create!(
+
+      # tạo refresh token nếu chưa có hoặc lấy token hiện tại
+      refresh_token_record = user.refresh_tokens.active.first_or_create!(
         token: SecureRandom.hex(32),
         expires_at: 30.days.from_now
       )
-      set_admin_refresh_token_cookie(refresh_token_record.token)
+
       render json: {
         access_token: access_token,
+        refresh_token: refresh_token_record.token,
         user: user_response(user)
       }
     else
@@ -19,45 +24,39 @@ class Api::V1::Admin::AuthController < ApplicationController
     end
   end
 
+  # POST /api/v1/admin/auth/refresh
+  def refresh
+    token_str = params[:refresh_token]
 
+    if token_str.blank?
+      return render json: { error: "No refresh token provided" }, status: :unauthorized
+    end
 
-   def logout
-    cookie_options = {
-      path: "/",
-      secure: Rails.env.production?
-    }
+    refresh_token = RefreshToken.active.find_by(token: token_str)
 
-    token_str = cookies.signed[:admin_refresh_token]
+    if refresh_token.nil? || refresh_token.user.role != "admin"
+      return render json: { error: "Invalid or expired refresh token" }, status: :unauthorized
+    end
 
-    Rails.logger.info "[LOGOUT] Attempting logout for token: #{token_str.inspect}"
+    user = refresh_token.user
+    access_token = JwtService.encode({ user_id: user.id, role: user.role })
 
-    cookies.delete(:admin_refresh_token, cookie_options)
+    render json: { access_token: access_token }
+  end
+
+  # POST /api/v1/admin/auth/logout
+  def logout
+    token_str = params[:refresh_token]
 
     if token_str.present?
       token = RefreshToken.find_by(token: token_str)
-      if token
-        token.update!(revoked_at: Time.current)
-        render json: { message: "Logged out successfully" }
-      else
-        render json: { error: "Token valid in cookie but not found in DB" }, status: :not_found
-      end
-    else
-      render json: { error: "No refresh token found in request" }, status: :unauthorized
+      token&.update!(revoked_at: Time.current)
     end
+
+    render json: { message: "Logged out successfully" }
   end
 
   private
-
-  def set_admin_refresh_token_cookie(token)
-    cookies.signed[:admin_refresh_token] = {
-      value: token,
-      httponly: true,
-      expires: 30.days.from_now,
-      path: "/", # let all API can use refresh token
-      same_site: Rails.env.production? ? :none : :lax,
-      secure: Rails.env.production?
-    }
-  end
 
   def user_response(user)
     {
