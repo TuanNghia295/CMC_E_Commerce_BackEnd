@@ -20,7 +20,7 @@ class Api::V1::Admin::AuthController < ApplicationController
         user: user_response(user)
       }
     else
-      render json: { error: "Invalid email, password or not admin" }, status: :unauthorized
+      render json: { message: "Email or password not match" }, status: :unauthorized
     end
   end
 

@@ -12,17 +12,39 @@ class User < ApplicationRecord
   # Xác thực email: Phải tồn tại (presence) và không được trùng (uniqueness).
   validates :email, presence: true, uniqueness: { case_sensitive: false }
 
-  # Tự động chuyển email về chữ thường trước khi lưu vào database
-  before_save :downcase_email
-
   # Lambda trong điều kiện xác thực password_digest chỉ áp dụng khi password được cung cấp.
   validates :password, length: { minimum: 6, maximum: 100 }, if: -> { password.present? }
 
   # Validate role phải nằm trong danh sách
   validates :role, inclusion: { in: ROLES }
 
+  # Tự động chuyển email về chữ thường trước khi lưu vào database
+  before_save :downcase_email
+
   # Tự động gán role là customer nếu lúc tạo mới chưa có role
   after_initialize :set_default_role, if: :new_record?
+
+  # Scope lấy danh sách user CHƯA bị xóa
+  scope :active, -> { where(deleted_at: nil) }
+
+  # Scope lấy danh sách user ĐÃ bị xóa
+  scope :deleted, -> { where.not(deleted_at: nil) }
+
+
+  # Đánh dấu user là đã xóa (soft delete)
+  # Không xóa record khỏi DB
+  def soft_delete!
+    update!(deleted_at: Time.current)
+  end
+
+  # Khôi phục user đã bị soft delete
+  def restore!
+    update!(deleted_at: nil)
+  end
+
+  def deleted?
+    deleted_at.present?
+  end
 
   private
   def set_default_role
@@ -32,7 +54,4 @@ class User < ApplicationRecord
   def downcase_email
     self.email = email.downcase if email.present?
   end
-
-  # Soft Delete: Lọc người dùng chưa bị xóa (deleted_at là nil).
-  scope :active, -> { where(deleted_at: nil) }
 end

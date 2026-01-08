@@ -10,6 +10,7 @@ Rails.application.routes.draw do
       namespace :admin do
         post "auth/login", to: "auth#login"
         post "auth/logout", to: "auth#logout"
+        resources :users
       end
     end
   end
