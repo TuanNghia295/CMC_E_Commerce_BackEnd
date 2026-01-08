@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   db:
-    image: postgres:15
+    image: postgres:15-alpine # Sử dụng bản alpine cho nhẹ máy EC2
     restart: always
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -10,8 +10,12 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - db_data:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 512M # Giới hạn để không làm treo EC2 t2.micro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -26,7 +30,15 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: bundle exec puma -C config/puma.rb
+    # Tự động migrate database khi container start để tránh lỗi thiếu bảng
+    command: >
+      sh -c "bundle exec rails db:migrate && 
+             bundle exec puma -C config/puma.rb"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10mb"
+        max-file: "3"
 
 volumes:
   db_data:
