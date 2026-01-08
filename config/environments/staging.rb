@@ -17,6 +17,8 @@ Rails.application.configure do
 
   config.log_formatter = ::Logger::Formatter.new
 
+  # (Tùy chọn) Cho phép tất cả subdomain của trycloudflare
+  config.hosts << /.*\.trycloudflare\.com/
   if ENV["RAILS_LOG_TO_STDOUT"].present?
     logger           = ActiveSupport::Logger.new(STDOUT)
     logger.formatter = config.log_formatter
