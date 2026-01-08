@@ -100,7 +100,7 @@ jobs:
           script: |
             set -e
 
-            cd /home/ubuntu/E_COMMERCE_BACKEND/CMC_E_Commerce_BackEnd
+            cd /home/ubuntu/CMC_E_Commerce_BackEnd
 
             echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login \
               -u "${{ secrets.DOCKERHUB_USERNAME }}" \
