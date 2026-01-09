@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
@@ -42,7 +42,7 @@ jobs:
 
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
@@ -64,7 +64,7 @@ jobs:
 
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Login Docker Hub
         uses: docker/login-action@v3
@@ -90,7 +90,7 @@ jobs:
 
     steps:
       - name: Checkout source
-        uses: actions/checkout@v4 # Cần checkout để lấy file docker-compose.yml trong repo
+        uses: actions/checkout@v6 # Cần checkout để lấy file docker-compose.yml trong repo
 
       - name: Copy docker-compose.yml to EC2
         uses: appleboy/scp-action@master
