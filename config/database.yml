@@ -13,8 +13,8 @@ development:
   pool: 5
   username: ntnghia13
   password: Panda2905@
-  host: 127.0.0.1
-  port: 5433
+  host: localhost
+  port: 5432
   database: e_commerce_back_end_production
 
 
