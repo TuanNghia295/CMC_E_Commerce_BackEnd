@@ -19,7 +19,7 @@ jobs:
           bundler-cache: true
 
       - name: Run RuboCop
-        run: bundle exec rubocop
+        run: bundle exec rubocop -a
 
   test:
     needs: lint

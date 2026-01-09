@@ -1,11 +1,6 @@
 class Api::V1::Admin::UsersController < ApplicationController
   before_action :set_user, only: [ :show, :update, :destroy ]
 
-  def index
-    users = User.order(created_at: :desc)
-    render json: users, status: :ok
-  end
-
   # @instance variable cho phép tái sử dụng kết quả tìm kiếm mà không cần phải truy vấn database lần nữa.
   def show
     render json: @user, status: :ok
@@ -35,21 +30,18 @@ class Api::V1::Admin::UsersController < ApplicationController
   end
 
   def index
-   users = Api::V1::Admin::UsersQuery
-          .new(params)
-          .call
-          .page(params[:page])
-          .per(20)
-
+    users = Api::V1::Admin::UsersQuery.new(params).call
     render json: {
-    data: users,
-    meta: {
-      page: users.current_page,
-      total_pages: users.total_pages,
-      total_count: users.total_count
+      data: users,
+      meta: {
+        page: users.current_page,
+        per_page: users.limit_value,
+        total_count: users.total_count,
+        total_pages: users.total_pages
+      }
     }
-  }
   end
+
 
   private
 
