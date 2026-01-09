@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_08_102738) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_08_102923) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pg_trgm"
@@ -140,6 +140,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_08_102738) do
     t.string "role"
     t.datetime "updated_at", null: false
     t.index ["deleted_at"], name: "index_users_on_deleted_at"
+    t.index ["email"], name: "index_users_on_email_trgm", opclass: :gin_trgm_ops, using: :gin
+    t.index ["full_name"], name: "index_users_on_full_name_trgm", opclass: :gin_trgm_ops, using: :gin
   end
 
   add_foreign_key "cart_items", "carts"

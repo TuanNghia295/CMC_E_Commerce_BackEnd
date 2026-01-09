@@ -34,6 +34,23 @@ class Api::V1::Admin::UsersController < ApplicationController
     render json: { message: "User deleted successfully" }, status: :ok
   end
 
+  def index
+   users = Api::V1::Admin::UsersQuery
+          .new(params)
+          .call
+          .page(params[:page])
+          .per(20)
+
+    render json: {
+    data: users,
+    meta: {
+      page: users.current_page,
+      total_pages: users.total_pages,
+      total_count: users.total_count
+    }
+  }
+  end
+
   private
 
   def set_user
