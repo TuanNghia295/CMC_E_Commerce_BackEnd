@@ -1,4 +1,4 @@
-# # db/seeds.rb
+# db/seeds.rb
 
 # # Tạo tài khoản admin
 # admin = User.find_or_create_by!(email: "admin@gmail.com") do |user|
@@ -10,8 +10,8 @@
 
 # puts "Admin account created: #{admin.email}"
 
-# # Tạo 3 tài khoản user
-# 3.times do |i|
+# Tạo 3 tài khoản user
+# 20.times do |i|
 #   user = User.find_or_create_by!(email: "tuanghia#{i+1}@gmail.com") do |u|
 #     u.full_name = "Tuan Nghia #{i+1}"
 #     u.password = "123123"
