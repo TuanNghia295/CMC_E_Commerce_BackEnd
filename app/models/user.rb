@@ -34,7 +34,7 @@ class User < ApplicationRecord
   scope :deleted, -> { where.not(deleted_at: nil) }
 
   # Scope search index sử dụng trigram
-  scope :search, -> (query) {
+  scope :search, ->(query) {
     rel = all
     return rel if query.blank?
     # sanitize_sql_like:  xác định một chuỗi ký tự có khớp với mẫu được chỉ định hay không
@@ -45,7 +45,7 @@ class User < ApplicationRecord
   }
 
   # Scope filter theo ngày
-  scope :filter_by_created_at, ->(from_date,to_date){
+  scope :filter_by_created_at, ->(from_date, to_date) {
     rel = all
 
     if from_date.present?
@@ -63,7 +63,7 @@ class User < ApplicationRecord
 
 
   # Scope sort A-Z, Z-A
-  scope :sort_alphabet, ->(column, direction){
+  scope :sort_alphabet, ->(column, direction) {
     rel = all
     return rel if column.blank?
 
